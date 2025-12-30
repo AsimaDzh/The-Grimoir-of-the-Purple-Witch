@@ -4,8 +4,11 @@ public class EnemyController : MonoBehaviour
 {
     [SerializeField] private float patrolSpeed = 3f;
     [SerializeField] private Transform[] patrolPoints;
+    [SerializeField] private Transform player;
 
     private int _currentPatrolIndex = 0;
+    private float detectionRange = 10f;
+
     private Rigidbody _rb;
 
 
@@ -17,10 +20,12 @@ public class EnemyController : MonoBehaviour
     
     void FixedUpdate()
     {
-        Patrol();
+        if (PlayerInRange()) ChasePlayer();
+        else Patrol();
     }
 
-    void Patrol()
+
+    private void Patrol()
     {
         if (patrolPoints.Length == 0) return;
 
@@ -32,6 +37,20 @@ public class EnemyController : MonoBehaviour
         if (Vector3.Distance(transform.position, targetPoint.position) < 0.1f)
             _currentPatrolIndex = (_currentPatrolIndex + 1) % patrolPoints.Length;
     }
+
+
+    bool PlayerInRange()
+    {
+        return Vector3.Distance(transform.position, player.position) <= detectionRange;
+    }
+
+
+    private void ChasePlayer()
+    {
+        Vector3 direction = (player.position - transform.position).normalized;
+        _rb.MovePosition(transform.position + direction * patrolSpeed * Time.fixedDeltaTime);
+    }
+
 
     private void OnDrawGizmos()
     {
@@ -53,5 +72,9 @@ public class EnemyController : MonoBehaviour
                     Gizmos.DrawLine(patrolPoints[i].position, allPoints.position);
             }
         }
+
+        // Detection range
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, detectionRange);
     }
 }
