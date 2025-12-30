@@ -884,6 +884,37 @@ Transform:
   - {fileID: 63707197}
   m_Father: {fileID: 2112425728}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &743562827
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 743562828}
+  m_Layer: 0
+  m_Name: Move Point Enemy
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &743562828
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 743562827}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2112425728}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &749784745
 GameObject:
   m_ObjectHideFlags: 0
@@ -1806,6 +1837,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 656282693}
+  - {fileID: 743562828}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!114 &2112425729
@@ -1820,7 +1852,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a8f68cfccce38424bb2415825e09a304, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  patrolSpeed: 3
+  whatStopsMovement:
+    serializedVersion: 2
+    m_Bits: 8
+  movePoint: {fileID: 743562828}
   patrolPoints:
   - {fileID: 313876648}
   - {fileID: 801483400}
