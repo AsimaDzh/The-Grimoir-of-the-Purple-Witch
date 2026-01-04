@@ -10,176 +10,132 @@ public class EnemyController : MonoBehaviour
         Chasing
     }
 
+    [Header("========== AI States ==========")]
+    [SerializeField] private AIState currentState;
+
     [Header("========== Patrol ==========")]
     [SerializeField] private Transform wayPoints;
+    [SerializeField] private float waitAtPoint = 1.5f;
     private int _currentPatrolIndex = 0;
-    private float _waitAtPoint = 2f;
     private float _waitCounter;
 
-    [Header("========== Components ==========")]
-    NavMeshAgent _navMeshAgent;
 
     [Header("========== Movement (grid) ==========")]
     [SerializeField] private LayerMask whatStopsMovement;
+    private Vector3 _currentTargetCell;
     private float _stepSize = 1f; // размер шага по сетке (обычно 1)
-    private float _reachThreshold = 0.2f; // порог достижения точки назначения
-    private bool _hasGridTarget;
-    private Vector3 _currentGridTarget;
-
-    [Header("========== AI States ==========")]
-    [SerializeField] private AIState currentState;
+    private float _moveSpeed = 4f;
+    private bool _isMoving;
 
     [Header("========== Chasing ==========")]
     [SerializeField] private float detectionRange;
 
     [Header("========== Suspicious ==========")]
     [SerializeField] private float suspiciousTime;
-    private float _timeSinceLastSeen;
 
     private GameObject player;
 
 
     void Start()
     {
-        _navMeshAgent = GetComponent<NavMeshAgent>();
         player = GameObject.FindGameObjectWithTag("Player");
-
-        _waitCounter = _waitAtPoint;
-        _timeSinceLastSeen = suspiciousTime;
-
-        // Отключаем автоматическое перемещение позиции агента по Transform,
-        // но навмеш всё ещё будет управлять позицией объекта.
-        if (_navMeshAgent != null)
-            _navMeshAgent.updatePosition = true;
+        _waitCounter = waitAtPoint;
+        SnapToGrid();
     }
 
-    bool ReachedGridTarget()
+    
+    void Update()
     {
-        if (!_hasGridTarget) return true;
-        return Vector3.Distance(transform.position, _currentGridTarget) <= _reachThreshold;
-    }
-
-
-    void FixedUpdate()
-    {
-        if (player == null || _navMeshAgent == null) return;
+        if (player == null) return;
 
         float distanceToPlayer = Vector3.Distance(transform.position, player.transform.position);
+
+        if (distanceToPlayer <= detectionRange)
+            currentState = AIState.Chasing;
+        else if (currentState == AIState.Chasing)
+            currentState = AIState.Idle;
 
         switch (currentState)
         {
             case AIState.Idle:
 
                 if (_waitCounter > 0)
-                    _waitCounter -= Time.fixedDeltaTime;
+                    _waitCounter -= Time.deltaTime;
                 else
                 {
                     currentState = AIState.Patrolling;
                     // стартуем патруль с попытки сделать шаг к следующей точке
                     TryStepTowards(wayPoints.GetChild(_currentPatrolIndex).position);
                 }
-
-                if (distanceToPlayer <= detectionRange)
-                {
-                    currentState = AIState.Chasing;
-                    _timeSinceLastSeen = suspiciousTime;
-                }
                 break;
 
 
             case AIState.Patrolling:
 
-                // Только когда текущая цель пройдена, ставим следующую цель (шаг)
-                if (ReachedGridTarget())
-                {
-                    // Если уже рядом с целевой патрульной точкой — переключаемся в Idle и ждём
-                    _hasGridTarget = false;
-                    Vector3 waypointPos = wayPoints.GetChild(_currentPatrolIndex).position;
+                if (_isMoving) return; // ждём окончания движения к текущей цели
+                
+                Vector3 waypointPos = wayPoints.GetChild(_currentPatrolIndex).position;
                     
-                    if (Vector3.Distance(RoundToGrid(transform.position), RoundToGrid(waypointPos)) <= 0.1f)
-                    {
-                        _currentPatrolIndex++;
-
-                        if (_currentPatrolIndex >= wayPoints.childCount)
-                            _currentPatrolIndex = 0;
-
-                        currentState = AIState.Idle;
-                        _waitCounter = _waitAtPoint;
-                    }
-                    else
-                    {
-                        // иначе делаем следующий шаг к той же точке (шаг по оси, без диагоналей)
-                        TryStepTowards(waypointPos);
-                    }
-                }
-
-                if (distanceToPlayer <= detectionRange)
+                if (Vector3.Distance(RoundToGrid(transform.position), RoundToGrid(waypointPos)) <= 0.1f)
                 {
-                    currentState = AIState.Chasing;
-                    _timeSinceLastSeen = suspiciousTime;
+                    _currentPatrolIndex = (_currentPatrolIndex + 1) % wayPoints.childCount;
+                    _waitCounter = waitAtPoint;
+                    currentState = AIState.Idle;
+                }
+                else
+                {
+                    // иначе делаем следующий шаг к той же точке (шаг по оси, без диагоналей)
+                    TryStepTowards(waypointPos);
                 }
                 break;
 
 
             case AIState.Chasing:
 
-                // Только когда текущая цель пройдена, ставим следующую цель (шаг)
-                if (ReachedGridTarget())
-                {
-                    _hasGridTarget = false;
-                    Vector3 step = GetCardinalStep(player.transform.position - transform.position);
-                    
-                    if (step != Vector3.zero)
-                    {
-                        Vector3 targetPos = RoundToGrid(transform.position) + step * _stepSize;
-                        if (!Physics.CheckSphere(targetPos, 0.2f, whatStopsMovement))
-                        {
-                            _currentGridTarget = targetPos;
-                            _navMeshAgent.isStopped = false;
-                            _navMeshAgent.SetDestination(targetPos);
-                        }
-                        else
-                        {
-                            // заблокировано — останавливаемся и начинаем уменьшать таймер подозрительности
-                            _navMeshAgent.isStopped = true;
-                            _timeSinceLastSeen -= Time.fixedDeltaTime;
-                        }
-                    }
-                }
-
-                if (distanceToPlayer > detectionRange)
-                {
-                    // если игрок ушёл из зоны — уменьшаем таймер
-                    _timeSinceLastSeen -= Time.fixedDeltaTime;
-                    if (_timeSinceLastSeen <= 0f)
-                    {
-                        currentState = AIState.Idle;
-                        _timeSinceLastSeen = suspiciousTime;
-                        _navMeshAgent.isStopped = false;
-                    }
-                }
-                // если видим игрока — обновляем таймер
-                else _timeSinceLastSeen = suspiciousTime;
+                // если уже движемся к цели, не менять направление
+                if (_isMoving) return;
+                TryStepTowards(player.transform.position);
                 break;
+        }
+
+        Move();
+    }
+
+
+    void Move()
+    {
+        if (!_isMoving) return;
+
+        transform.position = Vector3.MoveTowards(
+            transform.position,
+            _currentTargetCell,
+            _moveSpeed * Time.deltaTime
+        );
+
+        if (Vector3.Distance(transform.position, _currentTargetCell) < 0.05f)
+        {
+            transform.position = _currentTargetCell;
+            _isMoving = false;
         }
     }
 
 
     // Пытается сделать шаг по сетке в сторону цели (без диагоналей)
-    private void TryStepTowards(Vector3 targetWorldPos)
+    private void TryStepTowards(Vector3 worldTarget)
     {
-        Vector3 step = GetCardinalStep(targetWorldPos - transform.position);
+        Vector3 delta = worldTarget - transform.position;
+        Vector3 step = GetCardinalStep(delta);
         if (step == Vector3.zero) return;
-        Vector3 targetPos = RoundToGrid(transform.position) + step * _stepSize;
-        
-        if (!Physics.CheckSphere(targetPos, 0.2f, whatStopsMovement))
-        {
-            _currentGridTarget = targetPos;
-            _hasGridTarget = true;
-            _navMeshAgent.isStopped = false;
-            _navMeshAgent.SetDestination(targetPos);
-        }
-        else _navMeshAgent.ResetPath();
+
+        Vector3 targetCell = RoundToGrid(transform.position) + step * _stepSize;
+
+        if (Physics.CheckSphere(targetCell, 0.3f, whatStopsMovement))
+            return;
+
+        _currentTargetCell = targetCell;
+        _isMoving = true;
+
+        RotateTo(step);
     }
 
 
@@ -192,7 +148,7 @@ public class EnemyController : MonoBehaviour
         // если очень близко — не делать шага
         if (absX < 0.5f && absZ < 0.5f) return Vector3.zero;
 
-        if (absX >= absZ) 
+        if (absX > absZ) 
             return new Vector3(Mathf.Sign(delta.x), 0f, 0f);
         else 
             return new Vector3(0f, 0f, Mathf.Sign(delta.z));
@@ -207,6 +163,18 @@ public class EnemyController : MonoBehaviour
             pos.y,
             Mathf.Round(pos.z)
         );
+    }
+
+    void SnapToGrid()
+    {
+        transform.position = RoundToGrid(transform.position);
+    }
+
+
+    void RotateTo(Vector3 dir)
+    {
+        if (dir == Vector3.zero) return;
+        transform.rotation = Quaternion.LookRotation(dir);
     }
 
 
