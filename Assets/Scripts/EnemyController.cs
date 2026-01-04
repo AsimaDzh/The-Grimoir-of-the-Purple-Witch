@@ -23,15 +23,17 @@ public class EnemyController : MonoBehaviour
     [Header("========== Movement (grid) ==========")]
     [SerializeField] private LayerMask whatStopsMovement;
     private Vector3 _currentTargetCell;
-    private float _stepSize = 1f; // размер шага по сетке (обычно 1)
-    private float _moveSpeed = 4f;
     private bool _isMoving;
+    private float _stepSize = 1f; // размер шага по сетке (обычно 1)
+    private float _moveSpeed = 3f;
+
+    private float _rotationVelocity;
+    private float _smoothTime = 0.05f;
+    private float _targetAngle;
 
     [Header("========== Chasing ==========")]
     [SerializeField] private float detectionRange;
 
-    [Header("========== Suspicious ==========")]
-    [SerializeField] private float suspiciousTime;
 
     private GameObject player;
 
@@ -40,13 +42,20 @@ public class EnemyController : MonoBehaviour
     {
         player = GameObject.FindGameObjectWithTag("Player");
         _waitCounter = waitAtPoint;
-        SnapToGrid();
+        transform.position = RoundToGrid(transform.position);
     }
 
     
     void Update()
     {
         if (player == null) return;
+
+        float angle = Mathf.SmoothDampAngle( // Smooth rotation
+            transform.eulerAngles.y,
+            _targetAngle,
+            ref _rotationVelocity,
+            _smoothTime);
+        transform.rotation = Quaternion.Euler(0f, angle, 0f);
 
         float distanceToPlayer = Vector3.Distance(transform.position, player.transform.position);
 
@@ -63,17 +72,33 @@ public class EnemyController : MonoBehaviour
                     _waitCounter -= Time.deltaTime;
                 else
                 {
-                    currentState = AIState.Patrolling;
-                    // стартуем патруль с попытки сделать шаг к следующей точке
-                    TryStepTowards(wayPoints.GetChild(_currentPatrolIndex).position);
+                    // Попытаться начать движение к текущему waypoint; если не получается — пройти дальше по списку
+                    bool moved = false;
+                    if (wayPoints != null && wayPoints.childCount > 0)
+                    {
+                        int tries = 0;
+                        while (tries < wayPoints.childCount && !moved)
+                        {
+                            moved = TryStepTowards(wayPoints.GetChild(_currentPatrolIndex).position);
+                            if (!moved)
+                                _currentPatrolIndex = (_currentPatrolIndex + 1) % wayPoints.childCount;
+                            tries++;
+                        }
+                    }
+
+                    if (moved) currentState = AIState.Patrolling;
+                    else _waitCounter = waitAtPoint;
+                    // не получилось сдвинуться ни к одному waypoint — подождём и попробуем снова
+
                 }
                 break;
 
 
             case AIState.Patrolling:
 
-                if (_isMoving) return; // ждём окончания движения к текущей цели
-                
+                if (_isMoving) break; // если уже движемся, не менять цель
+
+                if (wayPoints == null || wayPoints.childCount == 0) break;
                 Vector3 waypointPos = wayPoints.GetChild(_currentPatrolIndex).position;
                     
                 if (Vector3.Distance(RoundToGrid(transform.position), RoundToGrid(waypointPos)) <= 0.1f)
@@ -84,8 +109,10 @@ public class EnemyController : MonoBehaviour
                 }
                 else
                 {
-                    // иначе делаем следующий шаг к той же точке (шаг по оси, без диагоналей)
-                    TryStepTowards(waypointPos);
+                    // пробуем сделать шаг к текущей точке; если не получилось (преграда или уже там) — переключаемся на следующий waypoint
+                    bool moved = TryStepTowards(waypointPos);
+                    if (!moved)
+                        _currentPatrolIndex = (_currentPatrolIndex + 1) % wayPoints.childCount;
                 }
                 break;
 
@@ -93,7 +120,7 @@ public class EnemyController : MonoBehaviour
             case AIState.Chasing:
 
                 // если уже движемся к цели, не менять направление
-                if (_isMoving) return;
+                if (_isMoving) break;
                 TryStepTowards(player.transform.position);
                 break;
         }
@@ -121,21 +148,26 @@ public class EnemyController : MonoBehaviour
 
 
     // Пытается сделать шаг по сетке в сторону цели (без диагоналей)
-    private void TryStepTowards(Vector3 worldTarget)
+    private bool TryStepTowards(Vector3 worldTarget)
     {
         Vector3 delta = worldTarget - transform.position;
         Vector3 step = GetCardinalStep(delta);
-        if (step == Vector3.zero) return;
+        if (step == Vector3.zero) return false;
 
         Vector3 targetCell = RoundToGrid(transform.position) + step * _stepSize;
 
-        if (Physics.CheckSphere(targetCell, 0.3f, whatStopsMovement))
-            return;
+        if (Physics.CheckSphere(
+            targetCell, 
+            0.3f, 
+            whatStopsMovement)) return false;
 
         _currentTargetCell = targetCell;
         _isMoving = true;
 
-        RotateTo(step);
+        // Плавное вращение: устанавливаем целевой угол, а фактическое вращение делается в Update
+        _targetAngle = Mathf.Atan2(step.x, step.z) * Mathf.Rad2Deg;
+
+        return true;
     }
 
 
@@ -163,18 +195,6 @@ public class EnemyController : MonoBehaviour
             pos.y,
             Mathf.Round(pos.z)
         );
-    }
-
-    void SnapToGrid()
-    {
-        transform.position = RoundToGrid(transform.position);
-    }
-
-
-    void RotateTo(Vector3 dir)
-    {
-        if (dir == Vector3.zero) return;
-        transform.rotation = Quaternion.LookRotation(dir);
     }
 
 
