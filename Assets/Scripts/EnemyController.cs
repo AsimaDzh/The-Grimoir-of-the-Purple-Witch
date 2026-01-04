@@ -23,6 +23,7 @@ public class EnemyController : MonoBehaviour
     [SerializeField] private LayerMask whatStopsMovement;
     private float _stepSize = 1f; // размер шага по сетке (обычно 1)
     private float _reachThreshold = 0.2f; // порог достижения точки назначения
+    private bool _hasGridTarget;
     private Vector3 _currentGridTarget;
 
     [Header("========== AI States ==========")]
@@ -52,7 +53,13 @@ public class EnemyController : MonoBehaviour
             _navMeshAgent.updatePosition = true;
     }
 
-    
+    bool ReachedGridTarget()
+    {
+        if (!_hasGridTarget) return true;
+        return Vector3.Distance(transform.position, _currentGridTarget) <= _reachThreshold;
+    }
+
+
     void FixedUpdate()
     {
         if (player == null || _navMeshAgent == null) return;
@@ -82,11 +89,13 @@ public class EnemyController : MonoBehaviour
 
             case AIState.Patrolling:
 
-                // когда агент дошёл до последней целевой клетки — делаем следующий шаг
-                if (_navMeshAgent.remainingDistance <= _reachThreshold)
+                // Только когда текущая цель пройдена, ставим следующую цель (шаг)
+                if (ReachedGridTarget())
                 {
                     // Если уже рядом с целевой патрульной точкой — переключаемся в Idle и ждём
+                    _hasGridTarget = false;
                     Vector3 waypointPos = wayPoints.GetChild(_currentPatrolIndex).position;
+                    
                     if (Vector3.Distance(RoundToGrid(transform.position), RoundToGrid(waypointPos)) <= 0.1f)
                     {
                         _currentPatrolIndex++;
@@ -115,14 +124,17 @@ public class EnemyController : MonoBehaviour
             case AIState.Chasing:
 
                 // Только когда текущая цель пройдена, ставим следующую цель (шаг)
-                if (_navMeshAgent.remainingDistance <= _reachThreshold)
+                if (ReachedGridTarget())
                 {
+                    _hasGridTarget = false;
                     Vector3 step = GetCardinalStep(player.transform.position - transform.position);
+                    
                     if (step != Vector3.zero)
                     {
                         Vector3 targetPos = RoundToGrid(transform.position) + step * _stepSize;
                         if (!Physics.CheckSphere(targetPos, 0.2f, whatStopsMovement))
                         {
+                            _currentGridTarget = targetPos;
                             _navMeshAgent.isStopped = false;
                             _navMeshAgent.SetDestination(targetPos);
                         }
@@ -162,6 +174,8 @@ public class EnemyController : MonoBehaviour
         
         if (!Physics.CheckSphere(targetPos, 0.2f, whatStopsMovement))
         {
+            _currentGridTarget = targetPos;
+            _hasGridTarget = true;
             _navMeshAgent.isStopped = false;
             _navMeshAgent.SetDestination(targetPos);
         }
