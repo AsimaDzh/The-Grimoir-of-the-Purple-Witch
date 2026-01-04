@@ -11,7 +11,7 @@ TagManager:
   - StopMovement
   - Water
   - UI
-  - Movable
+  - MoveAnim
   - 
   - 
   - 
