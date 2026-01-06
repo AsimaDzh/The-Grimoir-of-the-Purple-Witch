@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class BattleSystem : MonoBehaviour
 {
@@ -39,5 +40,6 @@ public class BattleSystem : MonoBehaviour
     {
         Debug.Log("Battle Started!");
         _state = BattleState.InBattle;
+        SceneManager.LoadScene("BattleScene");
     }
 }
