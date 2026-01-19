@@ -48,7 +48,11 @@ public class PlayerController : MonoBehaviour
             {
                 Vector3 targetPos = movePoint.position + moveDir;
 
-                if (!Physics.CheckSphere(targetPos, .2f, whatStopsMovement)) // Check for obstacles
+                if (!Physics.CheckBox(
+                    targetPos,
+                    new Vector3(0.45f, 0.5f, 0.45f), 
+                    Quaternion.identity, 
+                    whatStopsMovement))
                 {
                     movePoint.position = targetPos;
                     _lastMoveDir = moveDir;

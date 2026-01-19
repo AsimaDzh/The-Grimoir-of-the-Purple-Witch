@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.AI;
 
 public class EnemyController : MonoBehaviour
 {
@@ -13,27 +12,29 @@ public class EnemyController : MonoBehaviour
     [Header("========== AI States ==========")]
     [SerializeField] private AIState currentState;
 
+
     [Header("========== Patrol ==========")]
     [SerializeField] private Transform wayPoints;
-    [SerializeField] private float waitAtPoint = 1.5f;
+    [SerializeField] private float waitAtPoint = 3f;
     private int _currentPatrolIndex = 0;
     private float _waitCounter;
+    private bool _isWaitingAfterStep = false;
 
 
     [Header("========== Movement (grid) ==========")]
     [SerializeField] private LayerMask whatStopsMovement;
+    [SerializeField] private float _stepSize = 1f; // размер шага по сетке (обычно 1)
+    [SerializeField] private float _moveSpeed = 3f;
     private Vector3 _currentTargetCell;
     private bool _isMoving;
-    private float _stepSize = 1f; // размер шага по сетке (обычно 1)
-    private float _moveSpeed = 3f;
 
+    [SerializeField] private float _smoothTime = 0.05f;
     private float _rotationVelocity;
-    private float _smoothTime = 0.05f;
     private float _targetAngle;
+
 
     [Header("========== Chasing ==========")]
     [SerializeField] private float detectionRange;
-
 
     private GameObject player;
 
@@ -49,6 +50,13 @@ public class EnemyController : MonoBehaviour
     void Update()
     {
         if (player == null) return;
+
+        if (_isWaitingAfterStep)
+        { 
+            _waitCounter -= Time.deltaTime;
+            if (_waitCounter <= 0f) _isWaitingAfterStep = false;
+            return; // не делать ничего, пока ждём после шага
+        }
 
         float angle = Mathf.SmoothDampAngle( // Smooth rotation
             transform.eulerAngles.y,
@@ -72,7 +80,8 @@ public class EnemyController : MonoBehaviour
                     _waitCounter -= Time.deltaTime;
                 else
                 {
-                    // Попытаться начать движение к текущему waypoint; если не получается — пройти дальше по списку
+                    // Если есть waypoints — используем существующую логику.
+                    // Иначе пытаемся сделать случайный шаг.
                     bool moved = false;
                     if (wayPoints != null && wayPoints.childCount > 0)
                     {
@@ -85,11 +94,11 @@ public class EnemyController : MonoBehaviour
                             tries++;
                         }
                     }
+                    else moved = TryRandomStep(); // Нет waypoint-ов — пробуем случайный шаг
 
                     if (moved) currentState = AIState.Patrolling;
                     else _waitCounter = waitAtPoint;
-                    // не получилось сдвинуться ни к одному waypoint — подождём и попробуем снова
-
+                    // не получилось сдвинуться — подождём и попробуем снова
                 }
                 break;
 
@@ -98,21 +107,34 @@ public class EnemyController : MonoBehaviour
 
                 if (_isMoving) break; // если уже движемся, не менять цель
 
-                if (wayPoints == null || wayPoints.childCount == 0) break;
-                Vector3 waypointPos = wayPoints.GetChild(_currentPatrolIndex).position;
-                    
-                if (Vector3.Distance(RoundToGrid(transform.position), RoundToGrid(waypointPos)) <= 0.1f)
+                if (wayPoints == null || wayPoints.childCount == 0)
                 {
-                    _currentPatrolIndex = (_currentPatrolIndex + 1) % wayPoints.childCount;
-                    _waitCounter = waitAtPoint;
-                    currentState = AIState.Idle;
+                    // Случайное патрулирование: пробуем сделать новый случайный шаг
+                    bool moved = TryRandomStep();
+                    if (!moved)
+                    {
+                        // если не получилось — переходим в ожидание
+                        _waitCounter = waitAtPoint;
+                        currentState = AIState.Idle;
+                    }
                 }
                 else
                 {
-                    // пробуем сделать шаг к текущей точке; если не получилось (преграда или уже там) — переключаемся на следующий waypoint
-                    bool moved = TryStepTowards(waypointPos);
-                    if (!moved)
+                    Vector3 waypointPos = wayPoints.GetChild(_currentPatrolIndex).position;
+                    
+                    if (Vector3.Distance(RoundToGrid(transform.position), RoundToGrid(waypointPos)) <= 0.1f)
+                    {
                         _currentPatrolIndex = (_currentPatrolIndex + 1) % wayPoints.childCount;
+                        _waitCounter = waitAtPoint;
+                        currentState = AIState.Idle;
+                    }
+                    else
+                    {
+                        // пробуем сделать шаг к текущей точке; если не получилось (преграда или уже там) — переключаемся на следующий waypoint
+                        bool moved = TryStepTowards(waypointPos);
+                        if (!moved)
+                            _currentPatrolIndex = (_currentPatrolIndex + 1) % wayPoints.childCount;
+                    }
                 }
                 break;
 
@@ -143,6 +165,12 @@ public class EnemyController : MonoBehaviour
         {
             transform.position = _currentTargetCell;
             _isMoving = false;
+
+            if (currentState == AIState.Patrolling && wayPoints == null)
+            {
+                _isWaitingAfterStep = true;
+                _waitCounter = waitAtPoint;
+            }      
         }
     }
 
@@ -156,9 +184,10 @@ public class EnemyController : MonoBehaviour
 
         Vector3 targetCell = RoundToGrid(transform.position) + step * _stepSize;
 
-        if (Physics.CheckSphere(
-            targetCell, 
-            0.3f, 
+        if (Physics.CheckBox(
+            targetCell,
+            new Vector3(0.45f, 0.5f, 0.45f),// half-extents
+            Quaternion.identity,
             whatStopsMovement)) return false;
 
         _currentTargetCell = targetCell;
@@ -169,6 +198,55 @@ public class EnemyController : MonoBehaviour
 
         return true;
     }
+
+
+    //Координаты четырёх направлений (вперёд, назад, влево, вправо)
+    private static readonly Vector3[] CardinalDirections =
+    {
+        new Vector3(1f, 0f, 0f),
+        new Vector3(-1f, 0f, 0f),
+        new Vector3(0f, 0f, 1f),
+        new Vector3(0f, 0f, -1f)
+    };
+
+
+    // Перемешивает массив направлений случайным образом
+    private void ShuffleDirections(Vector3[] dirs)
+    {
+        for (int i = 0; i < dirs.Length; i++)
+        {
+            int rnd = Random.Range(i, dirs.Length);
+            (dirs[i], dirs[rnd]) = (dirs[rnd], dirs[i]);
+        }
+    }
+
+
+    // Пытается сделать случайный шаг в одном из четырёх направлений
+    private bool TryRandomStep()
+    {
+        Vector3 origin = RoundToGrid(transform.position);
+
+        ShuffleDirections(CardinalDirections);
+
+        for (int i = 0; i < CardinalDirections.Length; i++)
+        {
+            Vector3 step = CardinalDirections[i];
+            Vector3 targetCell = origin + step * _stepSize;
+
+            if (Physics.CheckBox(
+                targetCell, 
+                new Vector3(0.45f, 0.5f, 0.45f),// half-extents - половина размеров коробки
+                Quaternion.identity,
+                whatStopsMovement)) continue;
+
+            _currentTargetCell = targetCell;
+            _isMoving = true;
+            _targetAngle = Mathf.Atan2(step.x, step.z) * Mathf.Rad2Deg;
+            return true;
+        }
+        return false;
+    }
+
 
 
     // Возвращает шаг по одной оси (+-1 по X или +-1 по Z), выбирая более далёкую ось
@@ -210,7 +288,6 @@ public class EnemyController : MonoBehaviour
             }
         }
 
-        // Detection range
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, detectionRange);
     }
