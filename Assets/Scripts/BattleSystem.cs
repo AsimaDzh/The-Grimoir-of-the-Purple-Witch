@@ -10,7 +10,6 @@ public class BattleSystem : MonoBehaviour
     }
 
     [SerializeField] private ColliderTrigger battleTrigger;
-    
     private BattleState _state;
 
 
