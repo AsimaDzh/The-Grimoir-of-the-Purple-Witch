@@ -1665,7 +1665,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentState: 0
   wayPoints: {fileID: 228694239}
-  waitAtPoint: 1.5
+  waitAtPoint: 4
   whatStopsMovement:
     serializedVersion: 2
     m_Bits: 8

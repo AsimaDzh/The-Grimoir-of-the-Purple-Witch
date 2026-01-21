@@ -166,7 +166,7 @@ public class EnemyController : MonoBehaviour
             transform.position = _currentTargetCell;
             _isMoving = false;
 
-            if (currentState == AIState.Patrolling && wayPoints == null)
+            if (currentState == AIState.Patrolling && (wayPoints == null || wayPoints.childCount == 0))
             {
                 _isWaitingAfterStep = true;
                 _waitCounter = waitAtPoint;
@@ -203,10 +203,10 @@ public class EnemyController : MonoBehaviour
     //Координаты четырёх направлений (вперёд, назад, влево, вправо)
     private static readonly Vector3[] CardinalDirections =
     {
-        new Vector3(1f, 0f, 0f),
-        new Vector3(-1f, 0f, 0f),
-        new Vector3(0f, 0f, 1f),
-        new Vector3(0f, 0f, -1f)
+        new Vector3(3f, 0f, 0f),
+        new Vector3(-3f, 0f, 0f),
+        new Vector3(0f, 0f, 3f),
+        new Vector3(0f, 0f, -3f)
     };
 
 
