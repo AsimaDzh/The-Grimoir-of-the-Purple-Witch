@@ -8,9 +8,6 @@ public class ColliderTrigger : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         PlayerController player = other.GetComponent<PlayerController>();
-        if (player != null)
-        {
-            OnPlayerEnterTrigger?.Invoke(this, EventArgs.Empty);
-        }
+        if (player != null) OnPlayerEnterTrigger?.Invoke(this, EventArgs.Empty);
     }
 }

@@ -1,14 +1,14 @@
 using UnityEngine;
 
+enum AIState
+{
+    Idle = 0,
+    Patrolling = 1,
+    Chasing = 2
+}
+
 public class EnemyController : MonoBehaviour
 {
-    enum AIState
-    {
-        Idle,
-        Patrolling,
-        Chasing
-    }
-
     [Header("========== AI States ==========")]
     [SerializeField] private AIState currentState;
 
