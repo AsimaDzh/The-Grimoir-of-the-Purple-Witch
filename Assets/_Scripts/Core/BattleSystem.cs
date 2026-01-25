@@ -1,13 +1,14 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+enum BattleState
+{
+    Idle = 0,
+    InBattle = 1
+}
+
 public class BattleSystem : MonoBehaviour
 {
-    private enum BattleState
-    {
-        Idle,
-        InBattle
-    }
 
     [SerializeField] private ColliderTrigger battleTrigger;
     private BattleState _state;

@@ -1,6 +1,4 @@
-using UnityEngine;
-
-public class PlayerStats : MonoBehaviour
+public class PlayerStats
 {
     public static float playerHealth;
     public static float playerMaxHealth;
