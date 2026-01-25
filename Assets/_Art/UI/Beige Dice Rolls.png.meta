@@ -518,9 +518,9 @@ TextureImporter:
       name: Beige Dice Rolls_19
       rect:
         serializedVersion: 2
-        x: 755
+        x: 737
         y: 1657
-        width: 191
+        width: 223
         height: 215
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
@@ -540,9 +540,9 @@ TextureImporter:
       name: Beige Dice Rolls_20
       rect:
         serializedVersion: 2
-        x: 991
+        x: 968
         y: 1664
-        width: 163
+        width: 207
         height: 199
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
@@ -650,9 +650,9 @@ TextureImporter:
       name: Beige Dice Rolls_25
       rect:
         serializedVersion: 2
-        x: 2174
+        x: 2166
         y: 1662
-        width: 186
+        width: 204
         height: 205
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
@@ -672,9 +672,9 @@ TextureImporter:
       name: Beige Dice Rolls_26
       rect:
         serializedVersion: 2
-        x: 2401
+        x: 2386
         y: 1655
-        width: 182
+        width: 211
         height: 217
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
@@ -694,9 +694,9 @@ TextureImporter:
       name: Beige Dice Rolls_27
       rect:
         serializedVersion: 2
-        x: 2626
+        x: 2613
         y: 1651
-        width: 193
+        width: 221
         height: 225
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
@@ -716,9 +716,9 @@ TextureImporter:
       name: Beige Dice Rolls_28
       rect:
         serializedVersion: 2
-        x: 2853
+        x: 2845
         y: 1651
-        width: 202
+        width: 218
         height: 225
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
@@ -760,9 +760,9 @@ TextureImporter:
       name: Beige Dice Rolls_30
       rect:
         serializedVersion: 2
-        x: 3288
+        x: 3284
         y: 1651
-        width: 197
+        width: 210
         height: 223
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
@@ -782,9 +782,9 @@ TextureImporter:
       name: Beige Dice Rolls_31
       rect:
         serializedVersion: 2
-        x: 3552
+        x: 3542
         y: 1651
-        width: 190
+        width: 207
         height: 223
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
