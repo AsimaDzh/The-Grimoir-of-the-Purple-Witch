@@ -40,6 +40,6 @@ public class BattleSystem : MonoBehaviour
     {
         Debug.Log("Battle Started!");
         _state = BattleState.InBattle;
-        SceneManager.LoadScene("BattleScene");
+        SceneManager.LoadScene(SceneNames.BattleScene);
     }
 }
