@@ -12,25 +12,28 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private LayerMask whatStopsMovement;
     [SerializeField] private Animator anim;
 
+
     void Start()
     {
         movePoint.parent = null;
     }
 
-    void Update() // Movement and rotating
+
+    void Update() // Movement and smooth rotating
     {
-        var angle = Mathf.SmoothDampAngle( // Smoothly rotate towards target angle
+        var angle = Mathf.SmoothDampAngle(
             transform.eulerAngles.y,
             _targetAngle,
             ref _currentVelocity,
             _smoothTime);
 
-        transform.rotation = Quaternion.Euler(0f, angle, 0f); // Apply rotation
+        transform.rotation = Quaternion.Euler(0f, angle, 0f);
 
-        transform.position = Vector3.MoveTowards( // Move towards movePoint
+        transform.position = Vector3.MoveTowards(
             transform.position, 
             movePoint.position, 
             _moveSpeed * Time.deltaTime);
+
 
         if (Vector3.Distance(transform.position, movePoint.position) <= .05f)
         {
@@ -44,6 +47,7 @@ public class PlayerController : MonoBehaviour
             else if (Mathf.Abs(_vertical) == 1f)
                 moveDir = new Vector3(0f, 0f, _vertical);
 
+            // Check for collisions and move
             if (moveDir != Vector3.zero)
             {
                 Vector3 targetPos = movePoint.position + moveDir;

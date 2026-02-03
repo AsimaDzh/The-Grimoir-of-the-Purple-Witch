@@ -7,6 +7,7 @@ public class ColliderTrigger : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        // Check if the colliding object has a PlayerController component
         PlayerController player = other.GetComponent<PlayerController>();
         if (player != null) OnPlayerEnterTrigger?.Invoke(this, EventArgs.Empty);
     }
