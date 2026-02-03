@@ -41,4 +41,21 @@ public class InputManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
     }
+
+
+    private void Start()
+    {
+        InitializeInputSystem();
+    }
+
+
+    private void InitializeInputSystem()
+    {
+        if (inputActions == null)
+        {
+            Debug.LogError("InputActionAsset is not assigned in InputManager.");
+            return;
+        }
+    }
+
 }
