@@ -23,7 +23,6 @@ public class InputManager : MonoBehaviour
     public bool AttackPressed { get; private set; }
     public bool InteractPressed { get; private set; }
 
-
     public Action OnAttackPressed;
     public Action OnInteractPressed;
     public Action OnPausePressed;
@@ -37,14 +36,9 @@ public class InputManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-
         Instance = this;
         DontDestroyOnLoad(gameObject);
-    }
 
-
-    private void Start()
-    {
         InitializeInputSystem();
     }
 
@@ -78,6 +72,45 @@ public class InputManager : MonoBehaviour
             pauseAction.performed += OnPausePerformed;
         if (cancelAction != null)
             cancelAction.performed += OnCancelPerformed;
+
+        EnablePlayerInput();
+    }
+
+
+    private void OnEnable()
+    {
+        if (inputActions != null) inputActions.Enable();
+
+        if (EventBus.Instance != null)
+        {
+            EventBus.Instance.OnGamePaused += HandleGamePaused;
+            EventBus.Instance.OnGameResumed += HandleGameResumed;
+        }
+    }
+
+
+    private void OnDisable()
+    {
+        if (inputActions != null) inputActions.Disable();
+
+        if (EventBus.Instance != null)
+        {
+            EventBus.Instance.OnGamePaused -= HandleGamePaused;
+            EventBus.Instance.OnGameResumed -= HandleGameResumed;
+        }
+    }
+
+
+    private void OnDestroy()
+    {
+        if (attackAction != null)
+            attackAction.performed -= OnAttackPerformed;
+        if (interactAction != null)
+            interactAction.performed -= OnInteractPerformed;
+        if (pauseAction != null)
+            pauseAction.performed -= OnPausePerformed;
+        if (cancelAction != null)
+            cancelAction.performed -= OnCancelPerformed;
     }
 
 }
