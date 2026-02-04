@@ -73,7 +73,10 @@ public class InputManager : MonoBehaviour
         if (cancelAction != null)
             cancelAction.performed += OnCancelPerformed;
 
-        EnablePlayerInput();
+        if (playerActionMap != null)
+            playerActionMap.Enable();
+        if (uiActionMap != null)
+            uiActionMap.Enable();
     }
 
 
@@ -113,4 +116,36 @@ public class InputManager : MonoBehaviour
             cancelAction.performed -= OnCancelPerformed;
     }
 
+
+    private void Update()
+    {
+        // Continuously update movement input
+        MoveInput = moveAction != null ? moveAction.ReadValue<Vector2>() : Vector2.zero;
+    }
+
+
+    private void OnAttackPerformed(InputAction.CallbackContext context)
+    {
+        AttackPressed = true;
+        OnAttackPressed?.Invoke();
+    }
+
+
+    private void OnInteractPerformed(InputAction.CallbackContext context)
+    {
+        InteractPressed = true;
+        OnInteractPressed?.Invoke();
+    }
+
+
+    private void OnPausePerformed(InputAction.CallbackContext context)
+    {
+        OnPausePressed?.Invoke();
+    }
+
+
+    private void OnCancelPerformed(InputAction.CallbackContext context)
+    {
+        OnCancelPressed?.Invoke();
+    }
 }
