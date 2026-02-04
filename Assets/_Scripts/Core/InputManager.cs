@@ -56,6 +56,28 @@ public class InputManager : MonoBehaviour
             Debug.LogError("InputActionAsset is not assigned in InputManager.");
             return;
         }
+        playerActionMap = inputActions.FindActionMap("Player");
+        uiActionMap = inputActions.FindActionMap("UI");
+
+        if (playerActionMap == null || uiActionMap == null)
+        {
+            Debug.LogError("Action Maps not found in InputActionAsset.");
+            return;
+        }
+        moveAction = playerActionMap.FindAction("Move");
+        attackAction = playerActionMap.FindAction("Attack");
+        interactAction = playerActionMap.FindAction("Interact");
+        pauseAction = playerActionMap.FindAction("Pause");
+        cancelAction = uiActionMap.FindAction("Cancel");
+
+        if (attackAction != null)
+            attackAction.performed += OnAttackPerformed;
+        if (interactAction != null)
+            interactAction.performed += OnInteractPerformed;
+        if (pauseAction != null)
+            pauseAction.performed += OnPausePerformed;
+        if (cancelAction != null)
+            cancelAction.performed += OnCancelPerformed;
     }
 
 }
