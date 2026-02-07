@@ -38,7 +38,11 @@ public class InputManager : MonoBehaviour
         }
         Instance = this;
         DontDestroyOnLoad(gameObject);
+    }
 
+
+    private void Start()
+    {
         InitializeInputSystem();
     }
 
@@ -57,6 +61,7 @@ public class InputManager : MonoBehaviour
             Debug.LogError("InputActionAsset is not assigned in InputManager.");
             return;
         }
+
         playerActionMap = inputActions.FindActionMap("Player");
         uiActionMap = inputActions.FindActionMap("UI");
 
@@ -80,10 +85,7 @@ public class InputManager : MonoBehaviour
         if (cancelAction != null)
             cancelAction.performed += OnCancelPerformed;
 
-        if (playerActionMap != null)
-            playerActionMap.Enable();
-        if (uiActionMap != null)
-            uiActionMap.Enable();
+        EnablePlayerInput();
     }
 
 
@@ -121,6 +123,24 @@ public class InputManager : MonoBehaviour
             pauseAction.performed -= OnPausePerformed;
         if (cancelAction != null)
             cancelAction.performed -= OnCancelPerformed;
+    }
+
+
+    public void EnablePlayerInput()
+    {
+        if (playerActionMap != null)
+            playerActionMap.Enable();
+        if (uiActionMap != null)
+            uiActionMap.Enable();
+    }
+
+
+    public void EnableUIInput()
+    {
+        if (playerActionMap != null)
+            playerActionMap.Disable();
+        if (uiActionMap != null)
+            uiActionMap.Enable();
     }
 
 
