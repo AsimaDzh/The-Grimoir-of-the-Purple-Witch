@@ -43,6 +43,13 @@ public class InputManager : MonoBehaviour
     }
 
 
+    private void Update()
+    {
+        // Continuously update movement input
+        MoveInput = moveAction != null ? moveAction.ReadValue<Vector2>() : Vector2.zero;
+    }
+
+
     private void InitializeInputSystem()
     {
         if (inputActions == null)
@@ -117,13 +124,6 @@ public class InputManager : MonoBehaviour
     }
 
 
-    private void Update()
-    {
-        // Continuously update movement input
-        MoveInput = moveAction != null ? moveAction.ReadValue<Vector2>() : Vector2.zero;
-    }
-
-
     private void OnAttackPerformed(InputAction.CallbackContext context)
     {
         AttackPressed = true;
@@ -147,5 +147,39 @@ public class InputManager : MonoBehaviour
     private void OnCancelPerformed(InputAction.CallbackContext context)
     {
         OnCancelPressed?.Invoke();
+    }
+
+
+    private void HandleGamePaused()
+    {
+        if (playerActionMap != null)
+            playerActionMap.Disable();
+
+        Debug.Log("Player input disabled, game paused");
+    }
+
+
+    private void HandleGameResumed()
+    {
+        if (playerActionMap != null)
+            playerActionMap.Enable();
+    }
+
+
+    public Vector2 GetMoveInput()
+    {
+        return MoveInput;
+    }
+
+
+    public bool IsAttackPressed()
+    {
+        return AttackPressed;
+    }
+
+
+    public bool IsInteractPressed()
+    {
+        return InteractPressed;
     }
 }
