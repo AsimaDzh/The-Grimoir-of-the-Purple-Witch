@@ -1,8 +1,10 @@
-public class PlayerStats
+using UnityEngine;
+
+public class PlayerStats : ScriptableObject
 {
-    public static float playerHealth;
-    public static float playerMaxHealth;
-    public static float playerMana;
-    public static string[] spellCards;
-    public static string[] inventory;
+    public float playerHealth = 100f;
+    public float playerMaxHealth = 100f;
+    public float playerMana = 130f;
+    public string[] spellCards;
+    public string[] inventory;
 }
