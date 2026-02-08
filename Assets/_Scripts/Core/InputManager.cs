@@ -131,7 +131,7 @@ public class InputManager : MonoBehaviour
         if (playerActionMap != null)
             playerActionMap.Enable();
         if (uiActionMap != null)
-            uiActionMap.Enable();
+            uiActionMap.Disable();
     }
 
 
