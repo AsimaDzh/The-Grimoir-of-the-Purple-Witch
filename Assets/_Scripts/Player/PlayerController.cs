@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
@@ -19,7 +20,7 @@ public class PlayerController : MonoBehaviour
     }
 
 
-    void Update() // Movement and smooth rotating
+    public void OnMove(InputAction.CallbackContext context) // Movement and smooth rotating
     {
         var angle = Mathf.SmoothDampAngle(
             transform.eulerAngles.y,
