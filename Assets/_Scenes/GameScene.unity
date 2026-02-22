@@ -2365,6 +2365,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2072894324}
+  - component: {fileID: 2072894328}
   - component: {fileID: 2072894325}
   - component: {fileID: 2072894326}
   - component: {fileID: 2072894327}
@@ -2409,7 +2410,7 @@ MonoBehaviour:
   whatStopsMovement:
     serializedVersion: 2
     m_Bits: 8
-  playerStats: {fileID: 0}
+  playerStats: {fileID: 2072894328}
   anim: {fileID: 405209324}
 --- !u!136 &2072894326
 CapsuleCollider:
@@ -2461,6 +2462,21 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 126
   m_CollisionDetection: 0
+--- !u!114 &2072894328
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2072894323}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44cfdd72a9abbf14e97cb48e84609891, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerData: {fileID: 11400000, guid: 6279b540dd947674a8425774f80de8fb, type: 2}
+  currentHealth: 100
+  currentMana: 40
 --- !u!1 &2111133796
 GameObject:
   m_ObjectHideFlags: 0
