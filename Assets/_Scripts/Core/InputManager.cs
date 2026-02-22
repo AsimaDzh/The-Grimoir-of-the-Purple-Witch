@@ -170,6 +170,13 @@ public class InputManager : MonoBehaviour
     }
 
 
+    public void ResetButtonFlags()
+    {
+        AttackPressed = false;
+        InteractPressed = false;
+    }
+
+
     private void HandleGamePaused()
     {
         if (playerActionMap != null)

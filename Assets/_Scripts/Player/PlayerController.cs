@@ -3,15 +3,32 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    private float _moveSpeed = 5f;
+    [Header("========== Movement (grid) ==========")]
+    [SerializeField] private Transform movePoint;
+    [SerializeField] private LayerMask whatStopsMovement;
+
+    [Header("========== Stats & Animation ==========")]
+    [SerializeField] private PlayerStats playerStats;
+    [SerializeField] private Animator anim;
+
+    private float _speed = 5f;
     private float _smoothTime = 0.05f;
     private float _currentVelocity;
     private float _targetAngle;
     private Vector3 _lastMoveDir;
 
-    [SerializeField] private Transform movePoint;
-    [SerializeField] private LayerMask whatStopsMovement;
-    [SerializeField] private Animator anim;
+
+    private void Awake()
+    {
+        if (playerStats == null)
+            playerStats = GetComponent<PlayerStats>();
+        
+        if (InputManager.Instance == null)
+        {
+            Debug.LogError("PlayerController: InputManager instance not found in the scene!", this);
+            return;
+        }     
+    }
 
 
     void Start()
@@ -19,9 +36,12 @@ public class PlayerController : MonoBehaviour
         movePoint.parent = null;
     }
 
+
     private void Update()
     {
         OnMove();
+
+        InputManager.Instance.ResetButtonFlags();
     }
 
 
@@ -29,17 +49,19 @@ public class PlayerController : MonoBehaviour
     {
         SmoothRotation();
 
+        if (playerStats != null && playerStats.playerData != null)
+            _speed = playerStats.playerData.moveSpeed;
+
         transform.position = Vector3.MoveTowards(
             transform.position, 
-            movePoint.position, 
-            _moveSpeed * Time.deltaTime);
+            movePoint.position,
+            _speed * Time.deltaTime);
 
 
         if (Vector3.Distance(transform.position, movePoint.position) <= .05f)
         {
-            // Input handling when at movePoint
-            float _horizontal = Input.GetAxisRaw("Horizontal");
-            float _vertical = Input.GetAxisRaw("Vertical");
+            float _horizontal = InputManager.Instance.MoveInput.x;
+            float _vertical = InputManager.Instance.MoveInput.y;
 
             Vector3 moveDir = Vector3.zero;
             if (Mathf.Abs(_horizontal) == 1f)
