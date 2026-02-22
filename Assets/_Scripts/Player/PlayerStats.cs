@@ -33,8 +33,14 @@ public class PlayerStats : MonoBehaviour
             return;
         }
         // Taking stats from PlayerData and applying them to current values, with clamping for safety.
-        currentHealth = Mathf.Clamp(playerData.maxHealth, 1f, float.MaxValue);
-        currentMana = Mathf.Clamp(playerData.maxMana, 0f, float.MaxValue);
+        currentHealth = Mathf.Clamp(
+            playerData.maxHealth, 
+            1f, 
+            float.MaxValue);
+        currentMana = Mathf.Clamp(
+            playerData.maxMana, 
+            0f, 
+            float.MaxValue);
 
         // Notifying listeners about the initial values
         OnHealthChanged?.Invoke(currentHealth, playerData.maxHealth);
@@ -48,7 +54,10 @@ public class PlayerStats : MonoBehaviour
         playerData.maxMana += manaBonus;
 
         currentHealth = playerData.maxHealth;
-        currentMana = Mathf.Clamp(currentMana, 0f, playerData.maxMana);
+        currentMana = Mathf.Clamp(
+            currentMana, 
+            0f, 
+            playerData.maxMana);
 
         OnHealthChanged?.Invoke(currentHealth, playerData.maxHealth);
         OnManaChanged?.Invoke(currentMana, playerData.maxMana);
@@ -61,7 +70,10 @@ public class PlayerStats : MonoBehaviour
         if (amount <= 0f || currentHealth <= 0f) return;
 
         currentHealth -= amount;
-        currentHealth = Mathf.Clamp(currentHealth, 0f, playerData.maxHealth);
+        currentHealth = Mathf.Clamp(
+            currentHealth, 
+            0f, 
+            playerData.maxHealth);
 
         OnHealthChanged?.Invoke(currentHealth, playerData.maxHealth);
 
@@ -75,7 +87,10 @@ public class PlayerStats : MonoBehaviour
         if (amount <= 0f || currentHealth <= 0f) return;
 
         currentHealth += amount;
-        currentHealth = Mathf.Clamp(currentHealth, 0f, playerData.maxHealth);
+        currentHealth = Mathf.Clamp(
+            currentHealth, 
+            0f, 
+            playerData.maxHealth);
 
         OnHealthChanged?.Invoke(currentHealth, playerData.maxHealth);
     }
@@ -87,7 +102,10 @@ public class PlayerStats : MonoBehaviour
         if (Mathf.Approximately(amount, 0f)) return;
 
         currentMana += amount;
-        currentMana = Mathf.Clamp(currentMana, 0f, playerData.maxMana);
+        currentMana = Mathf.Clamp(
+            currentMana, 
+            0f, 
+            playerData.maxMana);
 
         OnManaChanged?.Invoke(currentMana, playerData.maxMana);
     }
