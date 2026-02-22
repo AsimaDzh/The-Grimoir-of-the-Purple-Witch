@@ -25,15 +25,9 @@ public class PlayerController : MonoBehaviour
     }
 
 
-    public void OnMove() // Movement and smooth rotating
+    private void OnMove()
     {
-        var angle = Mathf.SmoothDampAngle(
-            transform.eulerAngles.y,
-            _targetAngle,
-            ref _currentVelocity,
-            _smoothTime);
-
-        transform.rotation = Quaternion.Euler(0f, angle, 0f);
+        SmoothRotation();
 
         transform.position = Vector3.MoveTowards(
             transform.position, 
@@ -73,6 +67,19 @@ public class PlayerController : MonoBehaviour
             else anim.SetBool("isMoving", false);
         }
     }
+
+
+    private void SmoothRotation()
+    {
+        var angle = Mathf.SmoothDampAngle(
+            transform.eulerAngles.y,
+            _targetAngle,
+            ref _currentVelocity,
+            _smoothTime);
+
+        transform.rotation = Quaternion.Euler(0f, angle, 0f);
+    }
+
 
     void LateUpdate() // Snap movePoint to grid
     {
