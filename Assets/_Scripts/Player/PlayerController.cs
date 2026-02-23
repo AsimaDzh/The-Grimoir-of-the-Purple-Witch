@@ -40,7 +40,6 @@ public class PlayerController : MonoBehaviour
     private void Update()
     {
         OnMove();
-
         InputManager.Instance.ResetButtonFlags();
     }
 
@@ -60,29 +59,30 @@ public class PlayerController : MonoBehaviour
 
         if (Vector3.Distance(transform.position, movePoint.position) <= .05f)
         {
-            float _horizontal = InputManager.Instance.MoveInput.x;
-            float _vertical = InputManager.Instance.MoveInput.y;
+            Vector3 _moveDir = Vector3.zero;
+            Vector2 _moveInput = InputManager.Instance.MoveInput;
+            float _horizontal = Mathf.Round(_moveInput.x);
+            float _vertical = Mathf.Round(_moveInput.y);
 
-            Vector3 moveDir = Vector3.zero;
             if (Mathf.Abs(_horizontal) == 1f)
-                moveDir = new Vector3(_horizontal, 0f, 0f);
+                _moveDir = new Vector3(_horizontal, 0f, 0f);
             else if (Mathf.Abs(_vertical) == 1f)
-                moveDir = new Vector3(0f, 0f, _vertical);
+                _moveDir = new Vector3(0f, 0f, _vertical);
 
             // Check for collisions and move
-            if (moveDir != Vector3.zero)
+            if (_moveDir != Vector3.zero)
             {
-                Vector3 targetPos = movePoint.position + moveDir;
+                Vector3 _targetPos = movePoint.position + _moveDir;
 
                 if (!Physics.CheckBox(
-                    targetPos,
+                    _targetPos,
                     new Vector3(0.45f, 0.5f, 0.45f), 
                     Quaternion.identity, 
                     whatStopsMovement))
                 {
-                    movePoint.position = targetPos;
-                    _lastMoveDir = moveDir;
-                    _targetAngle = Mathf.Atan2(moveDir.x, moveDir.z) * Mathf.Rad2Deg;
+                    movePoint.position = _targetPos;
+                    _lastMoveDir = _moveDir;
+                    _targetAngle = Mathf.Atan2(_moveDir.x, _moveDir.z) * Mathf.Rad2Deg;
                     anim.SetBool("isMoving", true);
                 }
             }
@@ -93,13 +93,13 @@ public class PlayerController : MonoBehaviour
 
     private void SmoothRotation()
     {
-        var angle = Mathf.SmoothDampAngle(
+        var _angle = Mathf.SmoothDampAngle(
             transform.eulerAngles.y,
             _targetAngle,
             ref _currentVelocity,
             _smoothTime);
 
-        transform.rotation = Quaternion.Euler(0f, angle, 0f);
+        transform.rotation = Quaternion.Euler(0f, _angle, 0f);
     }
 
 
