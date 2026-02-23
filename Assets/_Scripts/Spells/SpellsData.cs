@@ -17,10 +17,27 @@ public class SpellsData : ScriptableObject
         Defensive = 4,
         Poisonous = 5
     }
+    
+
+    public enum MagicType
+    {
+        Energy = 0,
+        Fire = 1,
+        Wind = 2,
+        Water = 3,
+        Earth = 4,
+        Light = 5,
+        Dark = 6,
+        Defence = 7,
+        Heal = 8,
+        Purify = 9,
+    }
+
 
     [Header("========== General Spells Data ==========")]
     public string spellName = "New Spell";
     public SpellType spellType = SpellType.Single;
+    public MagicType magicType = MagicType.Energy;
     public Sprite spellIcon;
 
     [Header("========== Spell Stats ==========")]
