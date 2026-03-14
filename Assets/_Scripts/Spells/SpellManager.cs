@@ -24,7 +24,7 @@ public class SpellManager : MonoBehaviour
         if (playerStats == null)
             playerStats = GetComponent<PlayerStats>();
 
-        BuildAvailableWeaponsList();
+        BuildAvailableSpellsList();
 
         if (_availableSpells.Count == 0)
         {
@@ -58,7 +58,7 @@ public class SpellManager : MonoBehaviour
     }
 
 
-    private void BuildAvailableWeaponsList()
+    private void BuildAvailableSpellsList()
     {
         _availableSpells.Clear();
         if (spellInstances == null) return;
@@ -96,7 +96,7 @@ public class SpellManager : MonoBehaviour
     }
 
 
-    private void HandleAttackPressed(int index)
+    private void HandleSpellPressed(int index)
     {
         if (!TurnManager.Instance.IsPlayerTurn()) return;
 
@@ -118,7 +118,7 @@ public class SpellManager : MonoBehaviour
     }
 
 
-    public void UnlockWeaponBySlotIndex(int slotIndex)
+    public void UnlockSpellBySlotIndex(int slotIndex)
     {
         if (spellInstances == null
             || slotIndex < 0
