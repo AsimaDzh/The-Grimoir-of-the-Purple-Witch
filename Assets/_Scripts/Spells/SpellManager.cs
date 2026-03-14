@@ -7,16 +7,15 @@ public class SpellManager : MonoBehaviour
     [Header("========== Connections ==========")]
     [SerializeField] private PlayerStats playerStats;
 
-    [Header("========== Weapons on player ==========")]
+    [Header("========== Spells on player ==========")]
     [SerializeField] private SpellsBase[] spellInstances;
     [SerializeField] private bool[] spellAvailableAtStart;
     [SerializeField] private int defaultSpellIndexInAvailable = 0;
 
     private List<SpellsBase> _availableSpells = new List<SpellsBase>();
-    private int _currentAvailableIndex;
     private SpellsBase _currentSpell;
 
-    public SpellsBase CurrentWeapon => _currentSpell;
+    public SpellsBase CurrentSpell => _currentSpell;
     public PlayerStats PlayerStats => playerStats;
 
 
@@ -36,8 +35,8 @@ public class SpellManager : MonoBehaviour
         int startIndex = Mathf.Clamp(
             defaultSpellIndexInAvailable,
             0, _availableSpells.Count - 1);
-        _currentAvailableIndex = startIndex;
-        EquipByEnableDisable(_availableSpells[startIndex]);
+
+        EquipSpell(_availableSpells[startIndex]);
     }
 
 
@@ -46,8 +45,6 @@ public class SpellManager : MonoBehaviour
         if (InputManager.Instance != null)
         {
             InputManager.Instance.OnAttackPressed += HandleAttackPressed;
-            InputManager.Instance.OnSpellNextSelected += SwitchToNextWeapon;
-            InputManager.Instance.OnSpellPrevSelected += SwitchToPrevWeapon;
         }
     }
 
@@ -57,8 +54,6 @@ public class SpellManager : MonoBehaviour
         if (InputManager.Instance != null)
         {
             InputManager.Instance.OnAttackPressed -= HandleAttackPressed;
-            InputManager.Instance.OnSpellNextSelected -= SwitchToNextWeapon;
-            InputManager.Instance.OnSpellPrevSelected -= SwitchToPrevWeapon;
         }
     }
 
@@ -83,50 +78,42 @@ public class SpellManager : MonoBehaviour
     }
 
 
-    private void EquipByEnableDisable(SpellsBase spell)
+    private void EquipSpell(SpellsBase spell)
     {
         if (spell == null) return;
 
         if (spellInstances != null)
         {
-            foreach (SpellsBase w in spellInstances)
+            foreach (SpellsBase s in spellInstances)
             {
-                if (w != null)
-                    w.gameObject.SetActive(w == spell);
+                if (s != null)
+                    s.gameObject.SetActive(s == spell);
             }
         }
 
         _currentSpell = spell;
-        SetupWeapon(_currentSpell);
-    }
-
-    private void SwitchToNextWeapon()
-    {
-        if (_availableSpells.Count == 0) return;
-        _currentAvailableIndex = (_currentAvailableIndex + 1) % _availableSpells.Count;
-        EquipByEnableDisable(_availableSpells[_currentAvailableIndex]);
+        SetupSpell(_currentSpell);
     }
 
 
-    private void SwitchToPrevWeapon()
-    {
-        if (_availableSpells.Count == 0) return;
-        _currentAvailableIndex = (_currentAvailableIndex - 1 + _availableSpells.Count) % _availableSpells.Count;
-        EquipByEnableDisable(_availableSpells[_currentAvailableIndex]);
-    }
-
-
-    private void HandleAttackPressed()
+    private void HandleAttackPressed(int index)
     {
         if (!TurnManager.Instance.IsPlayerTurn()) return;
 
-        if (_currentSpell == null)
+        if (index < 0 || index >= _availableSpells.Count) return;
+
+        SpellsBase spell = _availableSpells[index];
+
+        if (spell == null)
         {
             Debug.LogWarning("SpellManager: player has no current spell");
             return;
         }
 
-        _currentSpell.Attack();
+        EquipSpell(spell);
+
+        spell.Attack();
+
         TurnManager.Instance.StartEnemyTurn();
     }
 
@@ -136,15 +123,18 @@ public class SpellManager : MonoBehaviour
         if (spellInstances == null
             || slotIndex < 0
             || slotIndex >= spellInstances.Length) return;
-        SpellsBase w = spellInstances[slotIndex];
-        if (w != null && !_availableSpells.Contains(w))
-            _availableSpells.Add(w);
+
+        SpellsBase s = spellInstances[slotIndex];
+
+        if (s != null && !_availableSpells.Contains(s))
+            _availableSpells.Add(s);
     }
 
 
-    private void SetupWeapon(SpellsBase spell)
+    private void SetupSpell(SpellsBase spell)
     {
         if (spell == null) return;
+
         spell.owner = transform;
         spell.transform.localPosition = Vector3.zero;
         spell.transform.localRotation = Quaternion.identity;
