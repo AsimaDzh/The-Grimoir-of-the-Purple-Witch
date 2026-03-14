@@ -118,12 +118,16 @@ public class SpellManager : MonoBehaviour
 
     private void HandleAttackPressed()
     {
+        if (!TurnManager.Instance.IsPlayerTurn()) return;
+
         if (_currentSpell == null)
         {
             Debug.LogWarning("SpellManager: player has no current spell");
             return;
         }
+
         _currentSpell.Attack();
+        TurnManager.Instance.StartEnemyTurn();
     }
 
 

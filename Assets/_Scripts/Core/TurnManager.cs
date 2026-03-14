@@ -12,8 +12,6 @@ public class TurnManager : MonoBehaviour
     public static TurnManager Instance { get; private set; }
     public TurnState CurrentTurn;
 
-    public bool isPlayerTurn => CurrentTurn == TurnState.PlayerTurn;
-
 
     private void Awake()
     {
@@ -24,6 +22,12 @@ public class TurnManager : MonoBehaviour
         }
         Instance = this;
         DontDestroyOnLoad(this.gameObject);
+    }
+
+
+    public bool IsPlayerTurn()
+    {
+        return CurrentTurn == TurnState.PlayerTurn;
     }
 
 
